@@ -15,11 +15,11 @@
 
 #define PORT 4000
 
-
+#define MESSAGE_SIZE 256
 
 // THREAD SERVIDOR
 void *serverWork(void * arg){
-	char buffer[256];
+	char buffer[MESSAGE_SIZE];
 	int n;
 	int newsockfd = *(int *) arg;
 	
@@ -30,7 +30,7 @@ int main(){
 		
 	int sockfd, newsockfd, n;
 	socklen_t clilen;
-	char buffer[256];
+	char buffer[MESSAGE_SIZE];
 	struct sockaddr_in serv_addr, cli_addr;
 	pthread_t thread;
 	//pthread_mutex_init(&m, NULL);
