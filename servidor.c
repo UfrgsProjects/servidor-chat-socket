@@ -12,16 +12,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
-
-#define PORT 4000
+#include "type.h"
 
 #define MESSAGE_SIZE 256
+#define MAXCONNECT 5
 
 // THREAD SERVIDOR - TODA LOGICA AQUI
 void *serverWork(void * arg){
 	char buffer[MESSAGE_SIZE];
 	int n;
-	int newsockfd = *(int *) arg;
+	int newsockfd = *(int *) arg;	// Pode ser id do usuario
 	
 	while(1){
 		bzero(buffer, 256);
@@ -29,7 +29,11 @@ void *serverWork(void * arg){
 		/* read from the socket */
 		n = read(newsockfd, buffer, 256);
 	
-		printf("Reading: %s", buffer);
+		printf("Receive Message: %s", buffer);
+
+	   // 	LOGICA DO QUE O SERVIDOR DEVE FAZER 
+
+
 	}
 }
 
@@ -45,7 +49,7 @@ int main(){
 
 	// CRIA SOCKET
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
+        printf("ERROR opening socket\n");
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
@@ -54,13 +58,13 @@ int main(){
 
 	// ASSOCIA ENDEREÇO/PORTA
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-		printf("ERROR on binding port");
+		printf("ERROR on binding port\n");
 		exit(1);
 	}
 
 	// DISPONIBILIZA SERVIDOR PARA ACEITAR CONEXÕES, 
-	// DISPONIBILIZA 5 CONEXÕES PENDENTES
-	listen(sockfd, 5);
+	// DISPONIBILIZA MAXCONNECT CONEXÕES PENDENTES
+	listen(sockfd, MAXCONNECT);
 
 	clilen = sizeof(struct sockaddr_in);
 	
@@ -71,7 +75,7 @@ int main(){
 
 		// FUNÇÃO ACCEPT SEGURA ATE QUE EXISTA UMA CONEXÃO, PRESSO DENTRO DO ACCEPT
 		if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-			printf("ERROR on accept");
+			printf("ERROR on accept\n");
 
 		printf("Socket id => %d\n", newsockfd);
 		

@@ -13,12 +13,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include "type.h"
 
-#define PORT 4000
 #define MESSAGE_SIZE 256
-
-
-
 
 
 // THREAD QUE SOMENTE IMPRIME DADOS ENVIADOS DO SERVIDOR
@@ -41,13 +38,42 @@ void *clienteWork(void * arg) {
 	}
 }
 
+void options(){
+	system("clear");	
+	printf("\t\t COMANDOS \n\n");	
+	printf("Mudar NickName:\t--nickname [name]\n");
+	printf("Criar Chat:    \t--chat [name]\n");
+	printf("Entrar Chat:   \t--join [chat_name]\n");
+	printf("Sair Chat:     \t--leave [chat_name]\n");
+	printf("Fechar Chat:   \t--close [chat_name]\n");
+	printf("_____________________________________________________________\n\n");
+	
+			
+}
+
+
+void getUserName(char* userName){
+	// INCIALIZA NOME DO USUARIO
+	system("clear");
+	printf("\t\t START SERVIDOR-CHAT-SOCKET\n\n");
+	printf("Enter NickName: ");
+	//scanf(" %MESSAGE_SIZE[^\n]",userName);		
+	fgets(userName, MESSAGE_SIZE, stdin);		
+	printf("Your name is: %s\n", userName);	
+	if (userName[MESSAGE_SIZE - 1] == '\n')
+	    userName[MESSAGE_SIZE - 1] = '\0';
+
+}
+
+
 
 int main(int argc, char *argv[]){
 
 	int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-	char buffer[MESSAGE_SIZE];	
+	char buffer[MESSAGE_SIZE];
+	char userName[MESSAGE_SIZE];	
 	pthread_t thread;
     
 	// VERIFICA QUANTIDADES DE PARAMETROS	
@@ -77,13 +103,21 @@ int main(int argc, char *argv[]){
         printf("ERROR connecting\n");
 		exit(0);
 	}else{
+	
 		// CRIA THREAD DO USUARIO	
 		pthread_create(&thread, NULL, clienteWork, &sockfd);
+		
+		getUserName(userName);
+		
+		strcpy (buffer,"--nickname ");
+		strcat (buffer, userName);
+		write(sockfd, buffer, strlen(buffer));
+		options();
 		
 		// ESCREVER MENSAGENS PARA SERVIDOR		
 		while(1) {
 			
-			printf("Enter here: \n");
+			
 			bzero(buffer, MESSAGE_SIZE);
 			fgets(buffer, MESSAGE_SIZE, stdin);
 			
