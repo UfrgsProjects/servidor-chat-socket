@@ -107,8 +107,8 @@ int main(int argc, char *argv[]){
 		// CRIA THREAD DO USUARIO	
 		pthread_create(&thread, NULL, clienteWork, &sockfd);
 		
+		// Ao inicializar servidor manda dados do usuario para servidor
 		getUserName(userName);
-		
 		strcpy (buffer,"--nickname ");
 		strcat (buffer, userName);
 		write(sockfd, buffer, strlen(buffer));

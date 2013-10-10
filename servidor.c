@@ -31,9 +31,23 @@ void *serverWork(void * arg){
 	
 		printf("Receive Message: %s", buffer);
 
-	   // 	LOGICA DO QUE O SERVIDOR DEVE FAZER 
+	   // LOGICA DO QUE O SERVIDOR DEVE FAZER 
+			// IMPLEMENTAR METODOS
+		if(strstr(buffer, "--nickname ") != 0){
+				
+		}else if(strstr(buffer, "--chat ") != 0){
 
+		}else if(strstr(buffer, "--join ") != 0){
 
+		}else if(strstr(buffer, "--leave ") != 0){
+
+		}else if(strstr(buffer, "--close ") != 0){
+
+		}else if(strstr(buffer, "--exit ") != 0){
+
+		}else{
+
+		}
 	}
 }
 
