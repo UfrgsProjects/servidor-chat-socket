@@ -1,6 +1,6 @@
 /******************************************
 *
-* IMPLEMENTAÇÃO DO CLINETE DE CHAT
+* IMPLEMENTAÇÃO DO CLINETE DE CHAT  
 *
 *******************************************/
 
