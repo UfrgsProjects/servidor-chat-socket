@@ -14,8 +14,90 @@
 #include <pthread.h>
 #include "type.h"
 
-#define MESSAGE_SIZE 256
 #define MAXCONNECT 5
+
+// VARIAVEIS GLOBAIS
+USER* lobby; // LISTA DE USUARIOS DO SISTEMA
+ROOM* room;  // LISTA DE CHATS DO SISTEMA
+
+// FUNÇÕES PARA GERENCIAR SALAS DE CHAT
+void create_room(char* name, int id_usuario){
+	printf("Enter Create ROOM \n");		
+	// CRIA SALA	
+	ROOM* r = (ROOM*) malloc ( sizeof(ROOM) );
+	strcpy(r->name, name);	
+	r->id = id_usuario;
+	r->list =  (USER*) malloc( sizeof(USER) );
+	
+	// ADICIONA NA LISTA DE SALAS
+	ROOM* aux = room;
+	while(aux->prox != NULL)
+		aux = aux->prox;
+	aux->prox = r;
+	r->prox = NULL;
+
+	printf("END Create ROOM\n");
+}
+
+// VERIFICA SE USUARIO CADASTRADO
+int user_exist_in_lobby(int id){
+	int exist = 0;
+	USER* aux = lobby;
+
+	while(aux->prox != NULL){
+		if(aux->id == id){
+			exist = 1; 		
+			break;
+		}		
+		aux = aux->prox;
+	}
+	return exist;			
+}
+
+
+void change_name_user(char* name, int id){
+	printf("--- Mundando nome usuario ---\n");	
+	USER* aux = lobby;
+	
+	while(aux->prox != NULL){
+		if(aux->id == id){
+			strcpy(aux->name, name);	
+			break;
+		}		
+		aux = aux->prox;
+	}
+	
+	char message[MESSAGE_SIZE];
+	sprintf(message,"%s: %s\n", "Nome Alterado", name);
+	write(id, message, strlen(message));
+}
+
+void add_user_to_lobby(char* name, int id){
+	printf("Adding user: %s %d\n",name, id);		
+
+	USER* new_user = (USER*) malloc( sizeof(USER) );			
+	strcpy(new_user->name, name);	
+	new_user->id = id;
+	
+	// ADICIONA NA LISTA DE SALAS
+	USER* aux = lobby;
+	
+	while(aux->prox != NULL)
+		aux = aux->prox;
+	aux->prox = new_user;
+	new_user->prox = NULL;
+}
+
+/*
+void show_rooms(){
+	ROOM* aux = room;
+	
+	while(aux->prox != NULL){
+			
+	}
+	
+}
+*/
 
 // THREAD SERVIDOR - TODA LOGICA AQUI
 void *serverWork(void * arg){
@@ -29,21 +111,33 @@ void *serverWork(void * arg){
 		/* read from the socket */
 		n = read(newsockfd, buffer, 256);
 	
+		if (n <= 0) {
+			close(n);			
+			break;
+		}
+
 		printf("Receive Message: %s", buffer);
 
 	   // LOGICA DO QUE O SERVIDOR DEVE FAZER 
 			// IMPLEMENTAR METODOS
-		if(strstr(buffer, "--nickname ") != 0){
+		
+		if(strstr(buffer, "--firstacess") != 0){
+			  char name[MESSAGE_SIZE]; 	
+			  sscanf(buffer, "--firstacess %s", name);
+			  add_user_to_lobby(name, newsockfd);
+		}else if(strstr(buffer, "--nickname") != 0){
+              char name[MESSAGE_SIZE];
+			  sscanf(buffer, "--nickname %s", name);	
+			  change_name_user(name, newsockfd);
+		}else if(strstr(buffer, "--chat") != 0){
 				
-		}else if(strstr(buffer, "--chat ") != 0){
+		}else if(strstr(buffer, "--join") != 0){
 
-		}else if(strstr(buffer, "--join ") != 0){
+		}else if(strstr(buffer, "--leave") != 0){
 
-		}else if(strstr(buffer, "--leave ") != 0){
+		}else if(strstr(buffer, "--close") != 0){
 
-		}else if(strstr(buffer, "--close ") != 0){
-
-		}else if(strstr(buffer, "--exit ") != 0){
+		}else if(strstr(buffer, "--exit") != 0){
 
 		}else{
 
@@ -59,6 +153,13 @@ int main(){
 	char buffer[MESSAGE_SIZE];
 	struct sockaddr_in serv_addr, cli_addr;
 	pthread_t thread;
+		
+	lobby = (USER*) malloc( sizeof(USER) );		
+	room = (ROOM*) malloc( sizeof(ROOM) );	
+	
+	lobby->prox = NULL;	
+	room->prox = NULL;
+	
 	//pthread_mutex_init(&m, NULL);
 
 	// CRIA SOCKET

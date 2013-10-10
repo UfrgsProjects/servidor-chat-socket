@@ -10,3 +10,5 @@ compile-cliente:
 compile-all:
 	gcc -Wall servidor.c -lpthread -o servidor
 	gcc -Wall cliente.c -lpthread -o cliente 
+
+

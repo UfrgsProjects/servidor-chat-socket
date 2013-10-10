@@ -15,7 +15,7 @@
 #include <pthread.h>
 #include "type.h"
 
-#define MESSAGE_SIZE 256
+//#define MESSAGE_SIZE 256
 
 
 // THREAD QUE SOMENTE IMPRIME DADOS ENVIADOS DO SERVIDOR
@@ -109,19 +109,17 @@ int main(int argc, char *argv[]){
 		
 		// Ao inicializar servidor manda dados do usuario para servidor
 		getUserName(userName);
-		strcpy (buffer,"--nickname ");
+		strcpy (buffer,"--firstacess ");
 		strcat (buffer, userName);
 		write(sockfd, buffer, strlen(buffer));
 		options();
 		
 		// ESCREVER MENSAGENS PARA SERVIDOR		
 		while(1) {
-			
-			
+					
 			bzero(buffer, MESSAGE_SIZE);
 			fgets(buffer, MESSAGE_SIZE, stdin);
-			
-			
+					
 
 			/* write in the socket */
 			n = write(sockfd, buffer, strlen(buffer));
