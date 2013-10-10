@@ -44,6 +44,7 @@ void options(){
 	printf("Mudar NickName:\t--nickname [name]\n");
 	printf("Criar Chat:    \t--chat [name]\n");
 	printf("Entrar Chat:   \t--join [chat_name]\n");
+	printf("Listar Chats:  \t--list\n");	
 	printf("Sair Chat:     \t--leave [chat_name]\n");
 	printf("Fechar Chat:   \t--close [chat_name]\n");
 	printf("_____________________________________________________________\n\n");
@@ -123,6 +124,12 @@ int main(int argc, char *argv[]){
 
 			/* write in the socket */
 			n = write(sockfd, buffer, strlen(buffer));
+
+			if(strstr(buffer, "--close") != 0){
+					sleep(2);			
+					break;
+			}
+
 			if (n < 0) {
 				printf("ERROR writing to socket\n");
 				exit(1);
