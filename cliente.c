@@ -15,16 +15,31 @@
 #include <pthread.h>
 
 #define PORT 4000
-
 #define MESSAGE_SIZE 256
 
-void *clienteWork (void * arg) {
+
+
+
+
+// THREAD QUE SOMENTE IMPRIME DADOS ENVIADOS DO SERVIDOR
+void *clienteWork(void * arg) {
 	char buffer[MESSAGE_SIZE];
 	int n;
 	int sockfd = *(int *) arg;
 
-}
+	/* read from the socket */
+	while(1){
+		bzero(buffer, MESSAGE_SIZE);
+		n = read(sockfd, buffer, MESSAGE_SIZE);
+		if (n <= 0) {
+			printf("Disconnected from server\n");
+			close(sockfd);
+			pthread_exit(NULL);
+		}
 
+		printf("%s",buffer);
+	}
+}
 
 
 int main(int argc, char *argv[]){
@@ -33,7 +48,7 @@ int main(int argc, char *argv[]){
     struct sockaddr_in serv_addr;
     struct hostent *server;
 	char buffer[MESSAGE_SIZE];	
-	//pthread_t thread;
+	pthread_t thread;
     
 	// VERIFICA QUANTIDADES DE PARAMETROS	
     if (argc < 2) {
@@ -63,13 +78,16 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}else{
 		// CRIA THREAD DO USUARIO	
-		//pthread_create(&thread, NULL, clienteWork, &sockfd);
-				
+		pthread_create(&thread, NULL, clienteWork, &sockfd);
+		
+		// ESCREVER MENSAGENS PARA SERVIDOR		
 		while(1) {
 			
 			printf("Enter here: \n");
 			bzero(buffer, MESSAGE_SIZE);
 			fgets(buffer, MESSAGE_SIZE, stdin);
+			
+			
 
 			/* write in the socket */
 			n = write(sockfd, buffer, strlen(buffer));
@@ -77,21 +95,8 @@ int main(int argc, char *argv[]){
 				printf("ERROR writing to socket\n");
 				exit(1);
 			}
-
- 			bzero(buffer,MESSAGE_SIZE);
-	
-			/* read from the socket */
-    		n = read(sockfd, buffer, MESSAGE_SIZE);
-    		if (n < 0) 
-				printf("ERROR reading from socket\n");
-
-    		printf("%s\n",buffer);
 		}
 		close(sockfd);	
-
 	}
-
-
-
 	return 0;
 }

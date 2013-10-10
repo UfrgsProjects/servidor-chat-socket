@@ -17,12 +17,20 @@
 
 #define MESSAGE_SIZE 256
 
-// THREAD SERVIDOR
+// THREAD SERVIDOR - TODA LOGICA AQUI
 void *serverWork(void * arg){
 	char buffer[MESSAGE_SIZE];
 	int n;
 	int newsockfd = *(int *) arg;
 	
+	while(1){
+		bzero(buffer, 256);
+
+		/* read from the socket */
+		n = read(newsockfd, buffer, 256);
+	
+		printf("Reading: %s", buffer);
+	}
 }
 
 
