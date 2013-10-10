@@ -69,8 +69,4 @@ int main(){
 	close(newsockfd);
 	close(sockfd);
 	return 0;
-
-
-
-	return 0;
 }
