@@ -64,22 +64,6 @@ void create_room(char* name, int id_usuario){
 	printf("END Create ROOM\n");
 }
 
-// VERIFICA SE USUARIO CADASTRADO
-int user_exist_in_lobby(int id){
-	int exist = 0;
-	USER* aux = lobby;
-
-	while(aux->prox != NULL){
-		if(aux->id == id){
-			exist = 1; 		
-			break;
-		}		
-		aux = aux->prox;
-	}
-	return exist;			
-}
-
-
 void change_name_user(char* name, int id){
 	printf("--- Mundando nome usuario ---\n");	
 	USER* aux = lobby;
@@ -103,7 +87,8 @@ void add_user_to_lobby(char* name, int id){
 		USER* new_user = (USER*) malloc( sizeof(USER) );			
 		strcpy(new_user->name, name);	
 		new_user->id = id;
-	
+		new_user->inRoom = 0;
+
 		// ADICIONA NA LISTA DE SALAS
 		USER* aux = lobby;
 	
@@ -124,8 +109,6 @@ void show_rooms(int id){
 	}
 	send_message_to_user("",id);		
 }
-
-
 
 // REMOVE USUARIO DO SERVIDOR E DO CHAT
 void remove_user(int id){
@@ -165,6 +148,97 @@ void remove_user(int id){
 	pthread_mutex_unlock(&mutex);	
 }
 
+void leave_from_chat(char* name, int id){
+	pthread_mutex_lock(&mutex);	
+		
+		USER* aux;
+		USER* aux2;
+		int found = 0;
+		USER* look = lobby;
+
+		while(look != NULL){
+			if(look->id == id)
+				break;
+			look = look->prox;
+		}	
+		
+		ROOM* raux = room;
+		while(raux != NULL){
+			if(! strcmp(raux->name, name)){			
+				aux = raux->list;
+				aux2 = raux->list;
+				while(aux != NULL){
+					if(aux->id == id){
+						aux2->prox = aux->prox;
+						free(aux);
+						look->inRoom = 0;
+						found  = 1;
+						break;				
+					}
+					aux2 = aux;
+					aux = aux->prox;
+				}
+			 }
+		   if(found == 1)
+				break;			
+		   raux = raux->prox;
+		}
+		if(raux == NULL){
+			send_message_to_user("Acho que vc digitou errado, digite certo", id);		
+		}else{
+			send_message_to_user("Saiu da chat", id);
+		}
+		
+
+	pthread_mutex_unlock(&mutex);	
+}
+
+void add_user_in_chat(char* name, int id){
+	pthread_mutex_lock(&mutex);		
+		printf("Add User in Chat\n");		
+		ROOM* aux = room;
+		ROOM* aux2 = room;
+
+		USER* look = lobby;
+		while(look != NULL){
+			if(look->id == id)
+				break;
+			look = look->prox;
+		}	
+		
+		if(look->inRoom == 0){
+
+			while(aux != NULL){
+				aux2 = aux;
+				
+				if(! strcmp(aux->name, name)){
+					USER* temp = aux2->list;
+					while(temp->prox != NULL)
+						temp = temp->prox;
+					USER* u = (USER*) malloc( sizeof(USER) );
+					strcpy(u->name,name);
+					u->id = id;
+					u->prox = NULL;
+					u->inRoom = 1;		
+					temp->prox = u;
+					send_message_to_user("Cadastrado no Chat", id);	
+					look->inRoom = 1;	
+					break;
+				}
+				aux = aux->prox;
+			}
+           if(aux == NULL){
+			 send_message_to_user("Acho eu não vi essa sala por aqui, Digite certo", id);	 		
+		  }		
+			
+		}else{
+			send_message_to_user("Saia de um Chat para entrar em outro", id);	
+		}	
+		printf("END ADD User in Chat\n");	
+	pthread_mutex_unlock(&mutex);	
+}
+
+
 
 // THREAD SERVIDOR - TODA LOGICA AQUI
 void *serverWork(void * arg){
@@ -192,26 +266,37 @@ void *serverWork(void * arg){
 			  char name[MESSAGE_SIZE]; 	
 			  sscanf(buffer, "--firstacess %s", name);
 			  add_user_to_lobby(name, newsockfd);
+
 		}else if(strstr(buffer, "--nickname") != 0){
               char name[MESSAGE_SIZE];
 			  sscanf(buffer, "--nickname %s", name);	
 			  change_name_user(name, newsockfd);
+
 		}else if(strstr(buffer, "--chat") != 0){
 			  char name[MESSAGE_SIZE];
 			  sscanf(buffer, "--chat %s", name);	
 			  create_room(name, newsockfd);	
+
 		}else if(strstr(buffer, "--join") != 0){
+			  char name[MESSAGE_SIZE];
+			  sscanf(buffer, "--join %s", name);	
+			  add_user_in_chat(name, newsockfd);	
 
 		}else if(strstr(buffer, "--leave") != 0){
+			  char name[MESSAGE_SIZE];
+			  sscanf(buffer, "--leave %s", name);	
+			  leave_from_chat(name, newsockfd);
 
 		}else if(strstr(buffer, "--close") != 0){
                send_message_to_user("Get out", newsockfd);
 			   remove_user(newsockfd);			
 			   close(newsockfd);		
+
 		}else if(strstr(buffer, "--list") != 0) {
 			  show_rooms(newsockfd);	
+		
 		}else{
-
+			// Mandar mensagens para todos usuarios que 	
 		}
 	}
 }

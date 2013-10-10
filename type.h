@@ -13,6 +13,7 @@ typedef struct user{
 
 	char name[MESSAGE_SIZE];
 	int  id;	
+	int  inRoom;	
 	struct user* prox;
 
 } USER;
