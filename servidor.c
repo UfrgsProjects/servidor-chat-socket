@@ -17,9 +17,12 @@
 
 
 
-void *serverWork (void * arg){
-
-
+// THREAD SERVIDOR
+void *serverWork(void * arg){
+	char buffer[256];
+	int n;
+	int newsockfd = *(int *) arg;
+	
 }
 
 
@@ -52,7 +55,9 @@ int main(){
 	listen(sockfd, 5);
 
 	clilen = sizeof(struct sockaddr_in);
+	
 
+	// MANTEM SERVIDOR SEMPRE PRONTO PARA UMA CONEXÃO 
 	while(1) {
 		printf("Waiting for connections...\n");
 
