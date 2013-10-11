@@ -148,18 +148,19 @@ void remove_user(int id){
 	pthread_mutex_unlock(&mutex);	
 }
 
+// RETIRA USUARIO DO CHAT
 void leave_from_chat(char* name, int id){
 	pthread_mutex_lock(&mutex);	
-		
+		printf("Starting Leaving from chat %s\n",name);
 		USER* aux;
 		USER* aux2;
 		int found = 0;
-		USER* look = lobby;
+		USER* user = lobby;
 
-		while(look != NULL){
-			if(look->id == id)
+		while(user != NULL){
+			if(user->id == id)
 				break;
-			look = look->prox;
+			user = user->prox;
 		}	
 		
 		ROOM* raux = room;
@@ -171,7 +172,8 @@ void leave_from_chat(char* name, int id){
 					if(aux->id == id){
 						aux2->prox = aux->prox;
 						free(aux);
-						look->inRoom = 0;
+						user->inRoom = 0;
+						user->friends = NULL;	
 						found  = 1;
 						break;				
 					}
@@ -179,34 +181,35 @@ void leave_from_chat(char* name, int id){
 					aux = aux->prox;
 				}
 			 }
-		   if(found == 1)
+		     if(found == 1)
 				break;			
-		   raux = raux->prox;
+		     raux = raux->prox;
 		}
 		if(raux == NULL){
-			send_message_to_user("Acho que vc digitou errado, digite certo", id);		
+			send_message_to_user("Acho eu não vi essa sala por aqui, Digite certo", id);		
 		}else{
 			send_message_to_user("Saiu da chat", id);
 		}
-		
-
+	printf("Ending Leaving from chat\n");	
 	pthread_mutex_unlock(&mutex);	
 }
 
+
+// ADICIONA USUARIO EM CHAT
 void add_user_in_chat(char* name, int id){
 	pthread_mutex_lock(&mutex);		
 		printf("Add User in Chat\n");		
 		ROOM* aux = room;
 		ROOM* aux2 = room;
 
-		USER* look = lobby;
-		while(look != NULL){
-			if(look->id == id)
+		USER* user = lobby;
+		while(user != NULL){
+			if(user->id == id)
 				break;
-			look = look->prox;
+			user = user->prox;
 		}	
 		
-		if(look->inRoom == 0){
+		if(user->inRoom == 0){
 
 			while(aux != NULL){
 				aux2 = aux;
@@ -222,7 +225,8 @@ void add_user_in_chat(char* name, int id){
 					u->inRoom = 1;		
 					temp->prox = u;
 					send_message_to_user("Cadastrado no Chat", id);	
-					look->inRoom = 1;	
+					user->inRoom = 1;
+					user->friends = aux->list; 		
 					break;
 				}
 				aux = aux->prox;
@@ -238,6 +242,27 @@ void add_user_in_chat(char* name, int id){
 	pthread_mutex_unlock(&mutex);	
 }
 
+// MANDA MENSAGENS PARA TODOS USUARIO DO CHAT
+void send_message_to_friends(char* message, int id){
+
+	char messageToSend[MESSAGE_SIZE];
+	USER* user = lobby;
+	USER* userInChat;
+	while(user != NULL){
+			if(user->id == id)
+				break;
+			user = user->prox;
+	}	
+	
+	userInChat = user->friends;	
+	sprintf(messageToSend, "%s: %s\n", user->name, message);
+
+	while(userInChat != NULL) {
+		write(userInChat->id, messageToSend, MESSAGE_SIZE);
+		userInChat = userInChat->prox;
+	}
+
+}
 
 
 // THREAD SERVIDOR - TODA LOGICA AQUI
@@ -247,10 +272,10 @@ void *serverWork(void * arg){
 	int newsockfd = *(int *) arg;	// Pode ser id do usuario
 	
 	while(1){
-		bzero(buffer, 256);
+		bzero(buffer, MESSAGE_SIZE);
 
 		/* read from the socket */
-		n = read(newsockfd, buffer, 256);
+		n = read(newsockfd, buffer, MESSAGE_SIZE);
 	
 		if (n <= 0) {
 			close(n);			
@@ -296,17 +321,18 @@ void *serverWork(void * arg){
 			  show_rooms(newsockfd);	
 		
 		}else{
-			// Mandar mensagens para todos usuarios que 	
+			  send_message_to_friends(buffer,newsockfd);	
 		}
 	}
+	return NULL;
 }
 
 
 int main(){
 		
-	int sockfd, newsockfd, n;
+	int sockfd, newsockfd;
 	socklen_t clilen;
-	char buffer[MESSAGE_SIZE];
+	//char buffer[MESSAGE_SIZE];
 	struct sockaddr_in serv_addr, cli_addr;
 	pthread_t thread;
 	pthread_mutex_init(&mutex, NULL);	

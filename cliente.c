@@ -47,6 +47,7 @@ void options(){
 	printf("Listar Chats:  \t--list\n");	
 	printf("Sair Chat:     \t--leave [chat_name]\n");
 	printf("Fechar Chat:   \t--close [chat_name]\n");
+	printf("Help:          \t--help\n");	
 	printf("_____________________________________________________________\n\n");
 	
 			
@@ -124,6 +125,14 @@ int main(int argc, char *argv[]){
 
 			/* write in the socket */
 			n = write(sockfd, buffer, strlen(buffer));
+
+			if(strstr(buffer, "clear") != 0){
+				system("clear");
+			}
+
+			if(strstr(buffer, "--help") != 0){
+				options();
+			}
 
 			if(strstr(buffer, "--close") != 0){
 					sleep(2);			

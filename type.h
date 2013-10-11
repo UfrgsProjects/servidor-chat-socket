@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #define PORT 4000
-#define MESSAGE_SIZE 256
+#define MESSAGE_SIZE 500
 
 typedef struct user{
 
@@ -15,6 +15,7 @@ typedef struct user{
 	int  id;	
 	int  inRoom;	
 	struct user* prox;
+	struct user* friends;	
 
 } USER;
 
