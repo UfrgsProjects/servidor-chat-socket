@@ -121,24 +121,18 @@ int main(int argc, char *argv[]){
 					
 			bzero(buffer, MESSAGE_SIZE);
 			fgets(buffer, MESSAGE_SIZE, stdin);
-					
-
-			/* write in the socket */
-			n = write(sockfd, buffer, strlen(buffer));
-
+				
 			if(strstr(buffer, "clear") != 0){
 				system("clear");
-			}
-
-			if(strstr(buffer, "--help") != 0){
+			}else if(strstr(buffer, "--help") != 0){
 				options();
-			}
-
-			if(strstr(buffer, "--close") != 0){
+			}else if(strstr(buffer, "--close") != 0){
 					sleep(2);			
 					break;
+			}else{
+				/* write in the socket */
+				n = write(sockfd, buffer, strlen(buffer));
 			}
-
 			if (n < 0) {
 				printf("ERROR writing to socket\n");
 				exit(1);

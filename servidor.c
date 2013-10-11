@@ -258,7 +258,8 @@ void send_message_to_friends(char* message, int id){
 	sprintf(messageToSend, "%s: %s\n", user->name, message);
 
 	while(userInChat != NULL) {
-		write(userInChat->id, messageToSend, MESSAGE_SIZE);
+		if(userInChat->id != id)	
+			write(userInChat->id, messageToSend, MESSAGE_SIZE);
 		userInChat = userInChat->prox;
 	}
 
