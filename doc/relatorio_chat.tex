@@ -1,0 +1,124 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Thin Sectioned Essay
+% LaTeX Template
+% Version 1.0 (3/8/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original Author:
+% Nicolas Diaz (nsdiaz@uc.cl) with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[a4paper, 11pt]{article} % Font size (can be 10pt, 11pt or 12pt) and paper size (remove a4paper for US letter paper)
+
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{graphicx} % Required for including pictures
+\usepackage{wrapfig} % Allows in-line images
+
+\usepackage{mathpazo} % Use the Palatino font
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\linespread{1.05} % Change line spacing here, Palatino benefits from a slight increase by default
+\usepackage{listings} 
+\makeatletter
+\renewcommand\@biblabel[1]{\textbf{#1.}} % Change the square brackets for each bibliography item from '[1]' to '1.'
+\renewcommand{\@listI}{\itemsep=0pt} % Reduce the space between items in the itemize and enumerate environments and the bibliography
+
+\renewcommand{\maketitle}{ % Customize the title - do not edit title and author name here, see the TITLE block below
+\begin{flushright} % Right align
+{\LARGE\@title} % Increase the font size of the title
+
+\vspace{50pt} % Some vertical space between the title and author name
+
+{\large\@author} % Author name
+\\\@date % Date
+
+\vspace{40pt} % Some vertical space between the author block and abstract
+\end{flushright}
+}
+
+%----------------------------------------------------------------------------------------
+%	TITLE
+%----------------------------------------------------------------------------------------
+
+\title{\textbf{Multiplicação Concorrente de Matrizes}\\ % Title
+Sistemas Operacionais II} % Subtitle
+
+\author{\textsc{Rodrigo Freitas Leite} \\ \textsc{Felipe Soares F. Paula} \\
+{\textit{UFRGS - Instituto de Informática}}} % Institution
+
+\date{\today} % Date
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Print the title section
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT AND KEYWORDS
+%----------------------------------------------------------------------------------------
+
+%\renewcommand{\abstractname}{Summary} % Uncomment to change the name of the abstract to something else
+
+\vspace{30pt} % Some vertical space between the abstract and first section
+
+%----------------------------------------------------------------------------------------
+%	ESSAY BODY
+%----------------------------------------------------------------------------------------
+
+\section*{Plataforma utilizada}
+
+\begin{center}
+\begin{tabular}{|l | r|}
+\hline
+\textbf{cpu} & AMD Athlon(tm) II X2 250 3GHz  \\
+\textbf{memória} & 2Gb \\
+\textbf{versão Gcc} & 4.7.2 \\
+\textbf{versão Linux} & 3.5.0-17-generic  \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+
+%------------------------------------------------
+
+\section*{Visão geral}
+
+Inicialmente, no servidor, inicializamos todas as estruturas necessárias para a concorrência (\textit{pthreads}) e para conexão (\textit{sockets}), também fazemos o \textit{bind} do servidor. Depois das inicializações, o servidor fica em um laço eterno "escutando" por novas conexões. Caso ele ache alguma, é disparada uma \textit{thread} que implementa, de fato, a lógica do chat. 
+
+O cliente fica preso a essa nova \textit{thread} que fica tratando as strings que são enviadas e disparando os serviços adequados. No primeiro acesso ao servidor, o cliente manda (sem saber) uma mensagem "\textit{--firstacess}" que indica ao servidor que é um novo usuário e que ele deve ser colocado na lista que contém todos usuários (chamada de \textit{lobby}).
+
+Quando o cliente manda a mensagem de criar sala, uma nova sala é adicionada à lista de salas e sua respectiva lista de usuários é inicializada. Também é feita uma validação para não ser criadas duas salas com o mesmo nome. Quando um usuário deseja sair, tem que ser feitas as consistências de tirá-lo da lista de usuários do servidor e das salas de chat.
+
+O programa do cliente é mais simples. São duas \textit{threads}, uma que escuta por mensagens do servidor e as imprime, e outra, que trata o que o usuário digita. Quando uma nova mensagem é escrita e enviada, ela vai para o servidor e é redistribuída entre todos os usuários na lista da sala correspondente.
+
+%------------------------------------------------
+
+\section*{Estruturas em memória}
+
+O servidor sempre terá as seguintes estruturas carregadas:
+
+\begin{itemize}
+\item \textbf{lobby}: Lista que guarda todos os usuários
+\item \textbf{room}: Lista das salas criadas, cada uma com uma lista de usuários.
+\end{itemize}
+
+\section*{Concorrência}
+
+Os serviços que envolvem as listas de salas e usuários tem que ser protegidas por sessões críticas, pois não temos como garantir que dois usuários não vão provocar acessos as listas ao mesmo tempo. Para resolver isso utilizamos um \textit{mutex}. Dessa maneira, o acesso aos serviços de criar salas, adicionar e remover usuários, por exemplo, é sequêncial. Uma melhoria seria uma análise mais profunda para ver se alguns desses serviços podem ser realmente concorrentes. Contudo, uma dificuldade seria testar o sistema, pois tentar inserir um erro de condição de corrida teríamos que ter uma quantidade considerável de usuários.
+
+\end{document}
