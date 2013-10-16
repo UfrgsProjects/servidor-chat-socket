@@ -100,11 +100,11 @@ Sistemas Operacionais II} % Subtitle
 
 Inicialmente, no servidor, inicializamos todas as estruturas necessárias para a concorrência (\textit{pthreads}) e para conexão (\textit{sockets}), também fazemos o \textit{bind} do servidor. Depois das inicializações, o servidor fica em um laço eterno "escutando" por novas conexões. Caso ele ache alguma, é disparada uma \textit{thread} que implementa, de fato, a lógica do chat. 
 
-O cliente fica preso a essa nova \textit{thread} que fica tratando as strings que são enviadas e disparando os serviços adequados. No primeiro acesso ao servidor, o cliente manda (sem saber) uma mensagem "\textit{--firstacess}" que indica ao servidor que é um novo usuário e que ele deve ser colocado na lista que contém todos usuários (chamada de \textit{lobby}).
+O cliente fica preso a essa nova \textit{thread} que fica tratando as strings que são enviadas e disparando os serviços adequados. No primeiro acesso ao servidor, o cliente manda (sem saber) uma mensagem "\textit{- -firstacess}" que indica ao servidor que é um novo usuário e que ele deve ser colocado na lista que contém todos usuários (chamada de \textit{lobby}).
 
 Quando o cliente manda a mensagem de criar sala, uma nova sala é adicionada à lista de salas e sua respectiva lista de usuários é inicializada. Também é feita uma validação para não ser criadas duas salas com o mesmo nome. Quando um usuário deseja sair, tem que ser feitas as consistências de tirá-lo da lista de usuários do servidor e das salas de chat.
 
-O programa do cliente é mais simples. São duas \textit{threads}, uma que escuta por mensagens do servidor e as imprime, e outra, que trata o que o usuário digita. Quando uma nova mensagem é escrita e enviada, ela vai para o servidor e é redistribuída entre todos os usuários na lista da sala correspondente.
+O programa do cliente é mais simples. São duas \textit{threads}, uma que escuta por mensagens do servidor e as imprime, e outra, que trata o que o usuário digita. Quando uma nova mensagem é escrita e enviada, ela vai para o servidor e é redistribuída entre todos os usuários na lista da sala correspondente, a menos que seja um comando o qual o servidor deverá lidar de maneira diferente.
 
 %------------------------------------------------
 
@@ -117,7 +117,36 @@ O servidor sempre terá as seguintes estruturas carregadas:
 \item \textbf{room}: Lista das salas criadas, cada uma com uma lista de usuários.
 \end{itemize}
 
+\section*{Funcionalidades Adicionais}
+
+Criamos o comando "\textit{- -list}", o qual lista todas as salas de chat que já foram criadas no servidor. Sentimos a falta deste comando para que os usuarios ao entrarem conhecerem as salas que estão disponíveis no sistema.
+
+
+\section*{Política de Troca de Mensagens}
+
+Criamos uma politica de mensagens a qual o servidor saberá discernir entre um comando e uma mensagem para outro usuário. 
+
+\begin{center}
+\begin{tabular}{|c | c|}
+\hline
+\multicolumn{2}{|c}{\textbf{Comandos}}\\   
+\hline
+\textbf{Mudar NickName} & - -nickname [name]  \\
+\textbf{Criar Chat} & - -chat [name] \\
+\textbf{Entrar Chat} & - -join [chat name] \\
+\textbf{Listar Chats} & - -list \\
+\textbf{Sair Chat} & - -leave [chat name] \\
+\textbf{Fechar Chat} & - -close [chat name] \\
+\textbf{Help} & - -help \\
+\hline
+\end{tabular}
+\end{center}
+
+
+\pagebreak
+
 \section*{Concorrência}
+
 
 Os serviços que envolvem as listas de salas e usuários tem que ser protegidas por sessões críticas, pois não temos como garantir que dois usuários não vão provocar acessos as listas ao mesmo tempo. Para resolver isso utilizamos um \textit{mutex}. Dessa maneira, o acesso aos serviços de criar salas, adicionar e remover usuários, por exemplo, é sequêncial. Uma melhoria seria uma análise mais profunda para ver se alguns desses serviços podem ser realmente concorrentes. Contudo, uma dificuldade seria testar o sistema, pois tentar inserir um erro de condição de corrida teríamos que ter uma quantidade considerável de usuários.
 
